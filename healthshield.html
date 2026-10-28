@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthShield | Insurance Calculator</title>
+<style>
+:root {
+  --navy:#132642; --blue:#3563e9; --teal:#11866e;
+  --ink:#19283e; --muted:#64748b; --bg:#f3f6fb;
+  --line:#e0e7f1; --white:#fff; --amber:#fff5df;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:Arial,Helvetica,sans-serif; line-height:1.5;
+}
+header {
+  background:linear-gradient(125deg,#132642,#294e7e);
+  color:white; padding:28px 18px 48px;
+}
+.wrap { max-width:1100px; margin:auto; }
+.brand { font-size:22px; font-weight:800; }
+h1 { font-size:clamp(30px,5vw,44px); line-height:1.15; }
+.hero { color:#dbe7ff; max-width:750px; }
+main { padding:0 16px 40px; margin-top:-24px; }
+.intro,.card {
+  background:white; border:1px solid var(--line);
+  border-radius:16px; padding:20px; margin-bottom:16px;
+  box-shadow:0 5px 20px #1326420a;
+}
+.layout { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+h2 { font-size:19px; margin:0 0 6px; }
+h3 { font-size:15px; }
+.sub,.small { color:var(--muted); font-size:13px; }
+.field { margin:12px 0; }
+label { display:block; font-size:13px; font-weight:bold; }
+input {
+  width:100%; padding:11px; margin-top:5px;
+  border:1px solid #ccd6e4; border-radius:9px;
+  font:inherit; min-width:0;
+}
+.two,.compare { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+button {
+  border:0; border-radius:9px; padding:12px;
+  font-weight:bold; cursor:pointer; font-size:14px;
+}
+button:focus,input:focus { outline:2px solid #8ba7ff; }
+.primary { background:var(--blue); color:white; }
+.secondary { background:#edf2ff; color:#2b4db5; }
+.buttons { display:flex; gap:9px; margin-top:15px; }
+.buttons button { flex:1; }
+.hero-result { background:var(--navy); color:white; border-radius:12px; padding:18px; }
+.hero-result small { color:#d4e0f6; }
+.big { font-size:clamp(27px,4vw,36px); font-weight:800; }
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.stat { border:1px solid var(--line); border-radius:10px; padding:12px; }
+.stat small { display:block; color:var(--muted); font-size:12px; }
+.stat strong { font-size:17px; overflow-wrap:anywhere; }
+.chart { margin-top:14px; border:1px solid var(--line); border-radius:12px; padding:14px; }
+svg { width:100%; height:auto; display:block; }
+.formula { margin-top:14px; background:#f0f5ff; padding:14px; border-radius:12px; }
+#steps { font-family:Consolas,monospace; font-size:12px; line-height:1.9; overflow-wrap:anywhere; }
+.meter { height:12px; background:#e8edf5; border-radius:20px; overflow:hidden; margin:14px 0; }
+#coverageMeter { height:100%; background:linear-gradient(90deg,#11866e,#4e8df5); width:0; }
+.plan { border:1px solid var(--line); border-radius:12px; padding:12px; min-width:0; }
+.planresult,.scenarioresult { background:#f0f5ff; padding:12px; border-radius:10px; margin-top:12px; font-size:13px; }
+.quizoptions { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.quizoption { text-align:left; background:#f5f7fb; border:1px solid var(--line); }
+.quizoption.correct { background:#eaf8f1; border-color:#11866e; }
+.quizoption.wrong { background:#fff0ea; border-color:#d97757; }
+.quizfeedback { margin-top:12px; font-size:13px; }
+.good { color:#087451; } .bad { color:#a33b26; }
+.warn { background:var(--amber); padding:12px; border-radius:10px; font-size:12px; margin-top:14px; }
+footer { text-align:center; color:var(--muted); font-size:12px; padding:18px; }
+@media(max-width:760px) {
+  .layout { grid-template-columns:1fr; }
+}
+@media(max-width:480px) {
+  .two,.compare,.stats,.quizoptions { grid-template-columns:1fr; }
+  .buttons { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">🛡️ HealthShield</div>
+    <h1>Insured doesn't always mean fully covered.</h1>
+    <p class="hero">Explore how deductibles, co-payments, exclusions and insurance limits affect a family's hospital expenses.</p>
+    <p>· Insurance Planning</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro">
+    <b>Real-world problem:</b> A family has health insurance but still faces a large hospital bill. This educational calculator estimates the insurer's payment and the family's out-of-pocket cost.
+  </div>
+
+  <div class="layout">
+    <section class="card">
+      <h2>1. Hospital bill and policy</h2>
+      <p class="sub">Change the values and calculate the estimated expenses.</p>
+
+      <div class="two">
+        <div class="field">
+          <label for="bill">Total hospital bill (₹)</label>
+          <input id="bill" type="number" min="0" value="500000">
+        </div>
+        <div class="field">
+          <label for="excluded">Non-covered expenses (₹)</label>
+          <input id="excluded" type="number" min="0" value="100000">
+        </div>
+      </div>
+
+      <div class="two">
+        <div class="field">
+          <label for="deductible">Deductible (₹)</label>
+          <input id="deductible" type="number" min="0" value="20000">
+        </div>
+        <div class="field">
+          <label for="copay">Co-payment (%)</label>
+          <input id="copay" type="number" min="0" max="100" value="10">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="suminsured">Available payout limit (₹)</label>
+        <input id="suminsured" type="number" min="0" value="350000">
+      </div>
+
+      <div class="buttons">
+        <button class="primary" id="calculate">Calculate claim</button>
+        <button class="secondary" id="reset">Reset sample</button>
+      </div>
+
+      <div class="warn">
+        Classroom model: excluded expenses are removed first, then the deductible, then co-payment; insurer payment is capped at the available limit. Real policy terms may calculate claims differently.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2. Calculation results</h2>
+      <p class="sub">The estimated payment split updates when inputs change.</p>
+
+      <div class="hero-result">
+        <small>Estimated family expense</small>
+        <div class="big" id="family">₹1,58,000</div>
+        <p id="summary">Out of a ₹5,00,000 hospital bill.</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <small>Insurer pays</small>
+          <strong id="insurer">₹3,42,000</strong>
+        </div>
+        <div class="stat">
+          <small>Admissible expenses</small>
+          <strong id="admissible">₹4,00,000</strong>
+        </div>
+        <div class="stat">
+          <small>Family share</small>
+          <strong id="share">31.6%</strong>
+        </div>
+        <div class="stat">
+          <small>Potential coverage gap</small>
+          <strong id="gap">₹1,58,000</strong>
+        </div>
+      </div>
+
+      <div class="chart">
+        <h3>Payment breakdown</h3>
+        <p class="sub">Green = insurer, amber = family.</p>
+        <svg id="chart" viewBox="0 0 440 110" role="img" aria-label="Insurer and family payment chart"></svg>
+      </div>
+
+      <div class="formula">
+        <h3>Board-ready formula breakdown</h3>
+        <div id="steps"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <section class="card">
+      <h2>3. Insurance coverage score</h2>
+      <p class="sub">Percentage of this example hospital bill paid by the insurer. This is an educational indicator, not an official policy rating.</p>
+      <div class="hero-result">
+        <small>Estimated bill covered</small>
+        <div class="big" id="coverageScore">68.4%</div>
+        <p id="coverageLabel">Based on the current scenario</p>
+      </div>
+      <div class="meter"><div id="coverageMeter"></div></div>
+      <p class="small" id="coverageGap">Family may need to pay ₹1,58,000.</p>
+    </section>
+
+    <section class="card">
+      <h2>4. Compare two plans</h2>
+      <p class="sub">Compare estimated family expenses using the current hospital bill and exclusions.</p>
+      <div class="compare">
+        <div class="plan">
+          <h3>Plan A</h3>
+          <label>Deductible (₹)<input id="aDed" type="number" min="0" value="20000"></label>
+          <label>Co-payment (%)<input id="aCopay" type="number" min="0" max="100" value="10"></label>
+          <label>Available cover (₹)<input id="aCover" type="number" min="0" value="350000"></label>
+          <div class="planresult" id="aResult">Family pays ₹1,58,000</div>
+        </div>
+        <div class="plan">
+          <h3>Plan B</h3>
+          <label>Deductible (₹)<input id="bDed" type="number" min="0" value="0"></label>
+          <label>Co-payment (%)<input id="bCopay" type="number" min="0" max="100" value="5"></label>
+          <label>Available cover (₹)<input id="bCover" type="number" min="0" value="450000"></label>
+          <div class="planresult" id="bResult">Calculating…</div>
+        </div>
+      </div>
+      <p class="small" id="planVerdict"></p>
+      <p class="small">Premium differences, exclusions and other policy terms are not included in this comparison.</p>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>5. Scenario simulator</h2>
+    <p class="sub">See how the current policy behaves with different hospital bills.</p>
+    <div class="buttons">
+      <button class="secondary" data-bill="200000">₹2 lakh bill</button>
+      <button class="secondary" data-bill="500000">₹5 lakh bill</button>
+      <button class="secondary" data-bill="1000000">₹10 lakh bill</button>
+      <button class="secondary" id="restoreBill">Use current bill</button>
+    </div>
+    <div class="scenarioresult" id="scenarioResult"></div>
+  </section>
+
+  <section class="card">
+    <h2>6. Mini quiz mode</h2>
+    <p class="sub">Test your understanding of deductibles, co-payments and cover limits.</p>
+    <div id="quizQuestion" style="font-weight:bold;margin:16px 0"></div>
+    <div id="quizOptions" class="quizoptions"></div>
+    <div id="quizFeedback" class="quizfeedback" aria-live="polite"></div>
+    <div class="buttons">
+      <button class="primary" id="nextQuestion">Next question</button>
+      <button class="secondary" id="restartQuiz">Restart quiz</button>
+    </div>
+    <p class="small" id="quizScore">Question 1 of 5 · Score 0</p>
+  </section>
+
+  
+
+  <footer>
+    HealthShield · Educational seminar prototype · Not an insurer quote or claim decision. Actual claim settlements depend on policy wording.
+  </footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const ids = ["bill","excluded","deductible","copay","suminsured"];
+
+const rupees = n => new Intl.NumberFormat("en-IN", {
+  style:"currency", currency:"INR", maximumFractionDigits:0
+}).format(Math.max(0,Math.round(n)));
+
+const plain = n => new Intl.NumberFormat("en-IN", {
+  maximumFractionDigits:0
+}).format(Math.max(0,Math.round(n)));
+
+function readMainInputs() {
+  const v = {};
+  ids.forEach(id => v[id] = Number($(id).value));
+
+  if (ids.some(id => !Number.isFinite(v[id]) || v[id] < 0)) {
+    throw new Error("Enter valid non-negative numbers.");
+  }
+  if (v.excluded > v.bill) {
+    throw new Error("Non-covered expenses cannot exceed the total bill.");
+  }
+  if (v.copay > 100) {
+    throw new Error("Co-payment must be between 0% and 100%.");
+  }
+  return v;
+}
+
+function estimate(bill, excluded, deductible, copay, limit) {
+  const admissible = Math.max(0, bill - Math.min(excluded,bill));
+  const afterDeductible = Math.max(0, admissible - deductible);
+  const beforeLimit = afterDeductible * (1 - copay / 100);
+  const insurer = Math.min(limit, beforeLimit);
+  const family = Math.max(0, bill - insurer);
+
+  return {admissible,afterDeductible,beforeLimit,insurer,family};
+}
+
+function drawChart(bill, insurer, family) {
+  const svg = $("chart");
+  const width = 400;
+  const safeBill = bill || 1;
+  const insurerWidth = width * insurer / safeBill;
+  const familyWidth = width * family / safeBill;
+
+  svg.innerHTML =
+    `<text x="0" y="17" font-size="12" fill="#52647f">Hospital bill: ${rupees(bill)}</text>` +
+    `<rect x="0" y="28" width="${width}" height="26" rx="6" fill="#edf1f7"/>` +
+    `<rect x="0" y="28" width="${Math.min(width,insurerWidth)}" height="26" rx="6" fill="#11866e"/>` +
+    `<rect x="${Math.min(width,insurerWidth)}" y="28" width="${Math.max(0,Math.min(width-insurerWidth,familyWidth))}" height="26" fill="#e5a33d"/>` +
+    `<circle cx="7" cy="76" r="5" fill="#11866e"/>` +
+    `<text x="19" y="80" font-size="12" fill="#19283e">Insurer: ${rupees(insurer)}</text>` +
+    `<circle cx="7" cy="100" r="5" fill="#e5a33d"/>` +
+    `<text x="19" y="104" font-size="12" fill="#19283e">Family: ${rupees(family)}</text>`;
+}
+
+function calculate() {
+  try {
+    const v = readMainInputs();
+    const r = estimate(v.bill,v.excluded,v.deductible,v.copay,v.suminsured);
+    const share = v.bill > 0 ? r.family / v.bill * 100 : 0;
+    const covered = v.bill > 0 ? r.insurer / v.bill * 100 : 0;
+
+    $("family").textContent = rupees(r.family);
+    $("insurer").textContent = rupees(r.insurer);
+    $("admissible").textContent = rupees(r.admissible);
+    $("share").textContent = share.toFixed(1) + "%";
+    $("gap").textContent = rupees(r.family);
+    $("summary").textContent = `Family pays ${rupees(r.family)} from a ${rupees(v.bill)} hospital bill.`;
+
+    $("coverageScore").textContent = covered.toFixed(1) + "%";
+    $("coverageMeter").style.width = covered + "%";
+    $("coverageLabel").textContent =
+      covered >= 80 ? "Most of this example bill is covered; check the policy terms." :
+      covered >= 50 ? "A substantial part is covered, but the family still faces expenses." :
+      "The family bears a large share of this example bill.";
+    $("coverageGap").textContent = `Potential family payment: ${rupees(r.family)}`;
+
+    $("steps").innerHTML =
+      `1. Admissible expenses = Total bill − Non-covered expenses<br>` +
+      `= ₹${plain(v.bill)} − ₹${plain(v.excluded)} = ₹${plain(r.admissible)}<br>` +
+      `2. After deductible = max(0, admissible − deductible)<br>` +
+      `= max(0, ₹${plain(r.admissible)} − ₹${plain(v.deductible)}) = ₹${plain(r.afterDeductible)}<br>` +
+      `3. Insurer share before limit = after deductible × (1 − co-pay%)<br>` +
+      `= ₹${plain(r.afterDeductible)} × ${(1-v.copay/100).toFixed(2)} = ₹${plain(r.beforeLimit)}<br>` +
+      `4. Insurer payout = min(insurer share, available limit)<br>` +
+      `= min(₹${plain(r.beforeLimit)}, ₹${plain(v.suminsured)}) = ₹${plain(r.insurer)}<br>` +
+      `5. Family expense = Total bill − insurer payout<br>` +
+      `= ₹${plain(v.bill)} − ₹${plain(r.insurer)} = ₹${plain(r.family)}`;
+
+    drawChart(v.bill,r.insurer,r.family);
+    comparePlans(v);
+    runScenario(Number(v.bill));
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+function comparePlans(v) {
+  const admissible = Math.max(0,v.bill-v.excluded);
+
+  function plan(prefix) {
+    const deductible = Number($(prefix+"Ded").value);
+    const copay = Number($(prefix+"Copay").value);
+    const cover = Number($(prefix+"Cover").value);
+
+    if ([deductible,copay,cover].some(x => !Number.isFinite(x) || x < 0) || copay > 100) {
+      return null;
+    }
+    const r = estimate(v.bill,v.excluded,deductible,copay,cover);
+    return r;
+  }
+
+  const a = plan("a");
+  const b = plan("b");
+
+  $("aResult").textContent = a ? "Family pays " + rupees(a.family) : "Check inputs";
+  $("bResult").textContent = b ? "Family pays " + rupees(b.family) : "Check inputs";
+
+  $("planVerdict").textContent = a && b
+    ? (a.family === b.family
+      ? "Both plans produce the same estimated family expense."
+      : (a.family < b.family ? "Plan A" : "Plan B") +
+        " has a lower estimated family expense by " +
+        rupees(Math.abs(a.family-b.family)) + ". Compare premiums and policy terms too.")
+    : "Enter valid values; co-payment must be 0–100%.";
+}
+
+function runScenario(bill) {
+  const excluded = Math.min(Number($("excluded").value)||0,bill);
+  const deductible = Number($("deductible").value)||0;
+  const copay = Number($("copay").value)||0;
+  const limit = Number($("suminsured").value)||0;
+  const r = estimate(bill,excluded,deductible,copay,limit);
+  const percent = bill ? (r.family/bill*100).toFixed(1) : "0.0";
+
+  $("scenarioResult").innerHTML =
+    `<b>Hospital bill:</b> ${rupees(bill)}<br>` +
+    `<b>Estimated insurer payment:</b> ${rupees(r.insurer)}<br>` +
+    `<b>Estimated family payment:</b> ${rupees(r.family)} (${percent}%)<br>` +
+    `<span class="small">Uses the current policy inputs.</span>`;
+}
+
+const quiz = [
+  {
+    q:"A ₹4,00,000 admissible bill has a ₹20,000 deductible. What remains after the deductible?",
+    o:["₹3,80,000","₹4,20,000","₹20,000","₹4,00,000"],
+    a:0,
+    e:"₹4,00,000 − ₹20,000 = ₹3,80,000."
+  },
+  {
+    q:"After the deductible, the eligible amount is ₹1,00,000 and co-payment is 10%. What is the insurer share before any limit?",
+    o:["₹1,00,000","₹90,000","₹10,000","₹1,10,000"],
+    a:1,
+    e:"Insurer share = ₹1,00,000 × (1 − 0.10) = ₹90,000."
+  },
+  {
+    q:"The insurer share is ₹3,60,000 but the payout limit is ₹3,00,000. What is the payout?",
+    o:["₹3,60,000","₹6,60,000","₹3,00,000","₹60,000"],
+    a:2,
+    e:"The payout is capped at the lower amount: ₹3,00,000."
+  },
+  {
+    q:"Which can increase a family's out-of-pocket cost in this calculator?",
+    o:["A lower excluded amount","A higher cover limit","A deductible or co-payment","A smaller bill in every case"],
+    a:2,
+    e:"A deductible or co-payment shifts some expenses to the family under this model."
+  },
+  {
+    q:"Why should someone read the policy schedule and Customer Information Sheet?",
+    o:["They guarantee every expense is paid","They explain coverage terms, exclusions and limits","They replace all claim documents","They guarantee every bill is cashless"],
+    a:1,
+    e:"Policy documents explain important terms, exclusions, limits and cost-sharing."
+  }
+];
+
+let quizIndex = 0;
+let quizPoints = 0;
+let quizAnswered = false;
+
+function renderQuiz() {
+  const q = quiz[quizIndex];
+  quizAnswered = false;
+  $("quizQuestion").textContent = `${quizIndex+1}. ${q.q}`;
+  $("quizOptions").innerHTML = "";
+  q.o.forEach((option,index) => {
+    const button = document.createElement("button");
+    button.className = "quizoption";
+    button.textContent = String.fromCharCode(65+index) + ". " + option;
+    button.addEventListener("click",() => answerQuiz(index));
+    $("quizOptions").appendChild(button);
+  });
+  $("quizFeedback").textContent = "";
+  $("quizFeedback").className = "quizfeedback";
+  $("quizScore").textContent = `Question ${quizIndex+1} of ${quiz.length} · Score ${quizPoints}`;
+}
+
+function answerQuiz(choice) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quiz[quizIndex];
+  const buttons = [...$("quizOptions").children];
+
+  buttons.forEach((button,index) => {
+    button.disabled = true;
+    if (index === q.a) button.classList.add("correct");
+    else if (index === choice) button.classList.add("wrong");
+  });
+
+  const correct = choice === q.a;
+  if (correct) quizPoints++;
+
+  $("quizFeedback").textContent = (correct ? "Correct! " : "Not quite. ") + q.e;
+  $("quizFeedback").className = "quizfeedback " + (correct ? "good" : "bad");
+  $("quizScore").textContent = `Question ${quizIndex+1} of ${quiz.length} · Score ${quizPoints}`;
+}
+
+$("calculate").addEventListener("click",calculate);
+
+$("reset").addEventListener("click",() => {
+  const sample = {
+    bill:500000, excluded:100000, deductible:20000,
+    copay:10, suminsured:350000
+  };
+  ids.forEach(id => $(id).value = sample[id]);
+  calculate();
+});
+
+ids.forEach(id => $(id).addEventListener("input",calculate));
+
+["aDed","aCopay","aCover","bDed","bCopay","bCover"].forEach(id => {
+  $(id).addEventListener("input",() => {
+    try { comparePlans(readMainInputs()); }
+    catch (error) { $("planVerdict").textContent = error.message; }
+  });
+});
+
+document.querySelectorAll("[data-bill]").forEach(button => {
+  button.addEventListener("click",() => runScenario(Number(button.dataset.bill)));
+});
+
+$("restoreBill").addEventListener("click",() => {
+  runScenario(Number($("bill").value)||0);
+});
+
+$("nextQuestion").addEventListener("click",() => {
+  if (!quizAnswered) {
+    $("quizFeedback").textContent = "Choose an answer first.";
+    return;
+  }
+  if (quizIndex < quiz.length-1) {
+    quizIndex++;
+    renderQuiz();
+  } else {
+    $("quizQuestion").textContent = `Quiz complete! Score: ${quizPoints}/${quiz.length}`;
+    $("quizOptions").innerHTML = "";
+    $("quizFeedback").textContent = quizPoints === quiz.length
+      ? "Excellent — you understand the key concepts."
+      : "Good practice! Restart the quiz to try again.";
+    $("quizScore").textContent = `Final score: ${quizPoints}/${quiz.length}`;
+  }
+});
+
+$("restartQuiz").addEventListener("click",() => {
+  quizIndex = 0;
+  quizPoints = 0;
+  $("nextQuestion").textContent = "Next question";
+  renderQuiz();
+});
+
+calculate();
+renderQuiz();
+</script>
+</body>
+</html>
